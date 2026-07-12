@@ -2,5 +2,4 @@ Flask==3.0.3
 Flask-SQLAlchemy==3.1.1
 anthropic==0.40.0
 python-dotenv==1.0.1
-vercel-wsgi==0.8.0
 psycopg2-binary==2.9.9
