@@ -31,9 +31,6 @@ def create_app():
     return app
 
 
-app = create_app()
-application = app
-
 def register_routes(app: Flask):
 
     @app.get("/")
@@ -229,6 +226,7 @@ def register_cli(app: Flask):
 
 
 app = create_app()
+application = app
 
 if __name__ == "__main__":
     app.run(debug=True)
