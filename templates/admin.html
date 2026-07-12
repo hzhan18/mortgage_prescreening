@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Brokers — Admin</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="admin-wrap">
+    <h1 class="display">Brokers</h1>
+    <p style="color:var(--muted)">Each broker's link is what you send to their clients. Create new ones from the terminal with <code>flask create-broker</code>.</p>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Shareable link</th><th>Leads</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for b in brokers %}
+        <tr>
+          <td>{{ b.name }}</td>
+          <td>{{ b.email or '—' }}</td>
+          <td><code>{{ request_host }}/b/{{ b.slug }}</code></td>
+          <td>{{ b.leads|length }}</td>
+          <td>{{ b.created_at.strftime('%Y-%m-%d') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No brokers yet — run <code>flask create-broker</code> from the project folder.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

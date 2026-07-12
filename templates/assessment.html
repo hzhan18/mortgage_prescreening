@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ broker.name }} — Mortgage Pre-Qualification</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-broker-slug="{{ broker.slug }}" data-broker-name="{{ broker.name }}">
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div class="topnav">
+    <div class="back" id="back-btn" onclick="goBack()" style="visibility:hidden;">&larr; <span data-i18n="back">Back</span></div>
+    <div class="brand">Ledger&nbsp;/ Pre‑Qualify</div>
+    <div class="lang-toggle">
+      <button id="lang-en" onclick="setLanguage('en')">EN</button>
+      <button id="lang-zh" onclick="setLanguage('zh')">中文</button>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- LANDING -->
+    <div class="screen active" data-screen="landing">
+      <div class="landing">
+        <div class="kicker" data-i18n="kicker">Shared with you by your realtor or mortgage broker</div>
+        <h1 class="display" id="invite-headline">Let's see what you can afford.</h1>
+        <p class="lead" data-i18n="landing_lead">A quick, guided pre-qualification.</p>
+        <button class="btn wide" style="max-width:280px; margin:0 auto;" onclick="showScreen('q-name')" data-i18n="get_started">Get Started</button>
+        <div class="meta-row">
+          <span data-i18n="trust_privacy">🔒 Your info goes only to your broker</span>
+          <span data-i18n="trust_time">⏱ ~3 minutes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAME -->
+    <div class="screen" data-screen="q-name">
+      <div class="eyebrow" data-i18n="step1_eyebrow">Step 1</div>
+      <h2 class="qtitle" data-i18n="name_title">First, what should we call you?</h2>
+      <p class="qsub" data-i18n="name_sub">We'll use this on the summary sent to your broker.</p>
+      <input type="text" id="in-name" data-i18n-placeholder="name_placeholder" onkeydown="if(event.key==='Enter')submitName()">
+      <div class="btn-row"><button class="btn" id="btn-name" onclick="submitName()" disabled data-i18n="continue">Continue</button></div>
+    </div>
+
+    <!-- EMAIL -->
+    <div class="screen" data-screen="q-email">
+      <div class="eyebrow" data-i18n="step2_eyebrow">Step 2</div>
+      <h2 class="qtitle" id="email-title" data-i18n="email_title">What's your email?</h2>
+      <p class="qsub" data-i18n="email_sub">We'll send your estimate here too.</p>
+      <input type="email" id="in-email" data-i18n-placeholder="email_placeholder" onkeydown="if(event.key==='Enter')submitEmail()">
+      <div class="btn-row"><button class="btn" id="btn-email" onclick="submitEmail()" disabled data-i18n="continue">Continue</button></div>
+    </div>
+
+    <!-- PHONE -->
+    <div class="screen" data-screen="q-phone">
+      <div class="eyebrow" data-i18n="step3_eyebrow">Step 3</div>
+      <h2 class="qtitle" data-i18n="phone_title">And a phone number?</h2>
+      <p class="qsub" data-i18n="phone_sub">In case your broker wants to follow up.</p>
+      <input type="tel" id="in-phone" data-i18n-placeholder="phone_placeholder" onkeydown="if(event.key==='Enter')submitPhone()">
+      <div class="btn-row"><button class="btn" id="btn-phone" onclick="submitPhone()" disabled data-i18n="continue">Continue</button></div>
+    </div>
+
+    <!-- PROPERTY KNOWN? -->
+    <div class="screen" data-screen="q-property-known">
+      <div class="eyebrow" data-i18n="step4_eyebrow">Step 4</div>
+      <h2 class="qtitle" data-i18n="property_known_title">Have you found a property yet?</h2>
+      <p class="qsub" data-i18n="property_known_sub">If you have an address, we'll pull in the listing details automatically.</p>
+      <div class="option-grid">
+        <div class="option-card" onclick="choosePropertyKnown(true)">
+          <div><div data-i18n="property_known_yes">Yes, I have an address</div><div class="desc" data-i18n="property_known_yes_desc">We'll look up the price, taxes, and fees</div></div>
+          <div class="arrow">→</div>
+        </div>
+        <div class="option-card" onclick="choosePropertyKnown(false)">
+          <div><div data-i18n="property_known_no">Not yet</div><div class="desc" data-i18n="property_known_no_desc">We'll estimate carrying costs instead</div></div>
+          <div class="arrow">→</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPERTY ADDRESS -->
+    <div class="screen" data-screen="q-property-address">
+      <div class="eyebrow" data-i18n="step5_eyebrow">Step 5</div>
+      <h2 class="qtitle" data-i18n="address_title">What's the property address?</h2>
+      <p class="qsub" data-i18n="address_sub">We'll search current listing sources for the price, tax, and fees.</p>
+      <input type="text" id="in-address" data-i18n-placeholder="address_placeholder" onkeydown="if(event.key==='Enter')submitAddress()">
+      <div class="btn-row"><button class="btn" id="btn-address" onclick="submitAddress()" disabled data-i18n="find_property">Find this property</button></div>
+      <div id="lookup-status" style="margin-top:18px;"></div>
+    </div>
+
+    <!-- PROPERTY CONFIRM -->
+    <div class="screen" data-screen="q-property-confirm">
+      <div class="eyebrow" data-i18n="step6_eyebrow">Step 6</div>
+      <h2 class="qtitle" data-i18n="confirm_title">Here's what we found</h2>
+      <p class="qsub" id="confirm-sub" data-i18n="confirm_sub">Review the details below.</p>
+      <div class="lookup-box">
+        <div id="lookup-badge"></div>
+        <div class="field-inline">
+          <div>
+            <label data-i18n="list_price_label">List price ($)</label>
+            <input type="number" id="edit-price">
+          </div>
+          <div>
+            <label data-i18n="property_tax_label">Monthly property tax ($)</label>
+            <input type="number" id="edit-tax">
+          </div>
+        </div>
+        <div class="checkline">
+          <input type="checkbox" id="edit-has-condo" onchange="toggleEditCondo()">
+          <label for="edit-has-condo" data-i18n="is_condo_label">This is a condo/strata property</label>
+        </div>
+        <div id="edit-condo-field" style="display:none; margin-top:10px;">
+          <label style="font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase;" data-i18n="condo_fees_label">Monthly condo/strata fees ($)</label>
+          <input type="number" id="edit-condo-fees">
+        </div>
+        <div class="note" id="lookup-note"></div>
+      </div>
+      <div class="btn-row"><button class="btn" onclick="confirmProperty()" data-i18n="looks_good">Looks good, continue</button></div>
+    </div>
+
+    <!-- PROPERTY UNKNOWN: price range -->
+    <div class="screen" data-screen="q-property-price-range">
+      <div class="eyebrow" data-i18n="step5_eyebrow">Step 5</div>
+      <h2 class="qtitle" data-i18n="price_range_title">What price range are you exploring?</h2>
+      <p class="qsub" data-i18n="price_range_sub">Just a rough number.</p>
+      <input type="number" id="in-price-range" data-i18n-placeholder="price_range_placeholder" onkeydown="if(event.key==='Enter')submitPriceRange()">
+      <div class="checkline">
+        <input type="checkbox" id="range-has-condo" onchange="toggleRangeCondo()">
+        <label for="range-has-condo" data-i18n="range_condo_label">Likely a condo/strata property</label>
+      </div>
+      <div id="range-condo-field" style="display:none; margin-top:10px;">
+        <label style="font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase;" data-i18n="condo_fees_label">Estimated monthly condo/strata fees ($)</label>
+        <input type="number" id="range-condo-fees">
+      </div>
+      <div class="btn-row"><button class="btn" id="btn-price-range" onclick="submitPriceRange()" disabled data-i18n="continue">Continue</button></div>
+    </div>
+
+    <!-- INCOME UPLOAD -->
+    <div class="screen" data-screen="q-income-upload">
+      <div class="eyebrow" data-i18n="step7_eyebrow">Step 7</div>
+      <h2 class="qtitle" data-i18n="income_upload_title">Now, let's look at income.</h2>
+      <p class="qsub" data-i18n="income_upload_sub">Upload a recent pay stub, T4, NOA, or employment letter.</p>
+      <div class="option-card" onclick="document.getElementById('file-input').click()" style="justify-content:center; text-align:center; border-style:dashed;">
+        <div><span data-i18n="upload_cta">📄 Click to upload a document</span><div class="desc" data-i18n="upload_desc">JPG, PNG, or PDF</div></div>
+      </div>
+      <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,application/pdf" style="display:none">
+      <div id="file-status" style="margin-top:14px;"></div>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="skipToManualIncome()" data-i18n="manual_income_link">I'll enter my income manually</button>
+      </div>
+    </div>
+
+    <!-- INCOME CONFIRM -->
+    <div class="screen" data-screen="q-income-confirm">
+      <div class="eyebrow" data-i18n="step8_eyebrow">Step 8</div>
+      <h2 class="qtitle" data-i18n="income_confirm_title">What's your annual gross income?</h2>
+      <p class="qsub" id="income-confirm-sub" data-i18n="income_confirm_sub_manual">Enter your annual gross income.</p>
+      <div id="extract-badge"></div>
+      <input type="number" id="in-income" data-i18n-placeholder="income_placeholder" onkeydown="if(event.key==='Enter')submitIncome()">
+      <div class="btn-row"><button class="btn" id="btn-income" onclick="submitIncome()" disabled data-i18n="continue">Continue</button></div>
+    </div>
+
+    <!-- DOWN PAYMENT -->
+    <div class="screen" data-screen="q-down-payment">
+      <div class="eyebrow" data-i18n="step9_eyebrow">Step 9</div>
+      <h2 class="qtitle" data-i18n="down_payment_title">How much do you have for a down payment?</h2>
+      <p class="qsub" data-i18n="down_payment_sub">Include savings, RRSP withdrawals, or gifted funds.</p>
+      <input type="number" id="in-down" data-i18n-placeholder="down_payment_placeholder" onkeydown="if(event.key==='Enter')submitDown()">
+      <div class="btn-row"><button class="btn" id="btn-down" onclick="submitDown()" disabled data-i18n="continue">Continue</button></div>
+    </div>
+
+    <!-- OTHER DEBTS -->
+    <div class="screen" data-screen="q-other-debts">
+      <div class="eyebrow" data-i18n="step10_eyebrow">Step 10</div>
+      <h2 class="qtitle" data-i18n="debts_title">Any other monthly debt payments?</h2>
+      <p class="qsub" data-i18n="debts_sub">Car loan, credit cards, student loan, etc — combined.</p>
+      <input type="number" id="in-debts" data-i18n-placeholder="debts_placeholder" onkeydown="if(event.key==='Enter')submitDebts()">
+      <div class="btn-row"><button class="btn" id="btn-debts" onclick="submitDebts()" data-i18n="calculate">Calculate my estimate</button></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="screen" data-screen="results">
+      <div id="results-content"></div>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="resetAll()" data-i18n="start_over">Start over</button>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="footer-disclaimer" data-i18n="footer_disclaimer">This tool produces a preliminary, non-binding estimate.</div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    window.BROKER_SLUG = {{ broker.slug|tojson }};
+    window.BROKER_NAME = {{ broker.name|tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/assessment.js') }}"></script>
+</body>
+</html>
