@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
 from werkzeug.utils import secure_filename
@@ -15,6 +16,10 @@ ALLOWED_UPLOAD_TYPES = {"image/png", "image/jpeg", "image/webp", "application/pd
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
+    instance_path = app.instance_path
+    if not os.access(instance_path, os.W_OK):
+        instance_path = tempfile.mkdtemp(prefix="mortgage_prescreen_instance_")
+        app.instance_path = instance_path
     os.makedirs(app.instance_path, exist_ok=True)
 
     db.init_app(app)
