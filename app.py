@@ -26,6 +26,9 @@ def create_app():
     return app
 
 
+app = create_app()
+application = app
+
 def register_routes(app: Flask):
 
     @app.get("/")
